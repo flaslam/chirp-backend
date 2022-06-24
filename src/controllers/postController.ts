@@ -18,7 +18,7 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 // Create new post
 export const createPost: RequestHandler = async (req, res) => {
   const post = new Post({
-    user: req.body.user._id,
+    user: req.body.id,
     message: req.body.message,
   });
   try {

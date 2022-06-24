@@ -3,7 +3,7 @@ import routes from "./routes/index";
 import mongoose from "mongoose";
 import cors from "cors";
 import morgan from "morgan";
-// import cookieParser from "cookieParser";
+import cookieParser from "cookie-parser";
 require("dotenv").config();
 
 const app = express();
@@ -18,6 +18,8 @@ db.once("open", () => console.log("Connected to database."));
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
+app.use(cookieParser());
+
 // Make uploads folder static / publicly available
 app.use("/uploads", express.static("uploads"));
 

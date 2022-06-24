@@ -1,6 +1,10 @@
 import { Request, Router } from "express";
 import { getAllPosts, createPost } from "../controllers/postController";
-import { createUser, uploadFile } from "../controllers/userController";
+import {
+  createUser,
+  uploadFile,
+  loginUser,
+} from "../controllers/userController";
 
 // Uploads
 import multer, { FileFilterCallback } from "multer";
@@ -10,7 +14,11 @@ const storage = multer.diskStorage({
     cb(null, "./uploads/profile/");
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    // cb(null, file.originalname);
+    const username = req.body.username;
+    const extension = file.mimetype.split("/")[1];
+    const fileName = username + "." + extension;
+    cb(null, fileName);
   },
 });
 
@@ -46,6 +54,7 @@ router.delete("/:id");
 
 // User routes
 router.post("/signup", upload.single("photo"), createUser);
+router.post("/login", loginUser);
 
 // Test upload
 router.post("/upload", upload.single("photo"), uploadFile);
