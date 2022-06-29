@@ -1,5 +1,7 @@
 import User from "../models/user";
 import { RequestHandler } from "express";
+import bcrypt, { hash } from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const createUser: RequestHandler = async (req, res) => {
   // Check if username already exists in database
@@ -10,14 +12,15 @@ export const createUser: RequestHandler = async (req, res) => {
       .json({ success: false, message: "User already exists" });
   }
 
-  // TODO: check if photo exists, if not don't add it to the user or file url
+  // TODO: check if photo file is attached
+  // if not, set default photo to user.
 
   // Convert path from local to accessible one (replace \ with /)
   let fileUrl = req.file?.path.replace(/\\/g, "/");
 
   const user = new User({
     username: req.body.username,
-    password: req.body.password,
+    password: await bcrypt.hash(req.body.password, 10),
     displayName: req.body.displayName,
     photo: fileUrl,
   });
@@ -44,8 +47,6 @@ export const uploadFile: RequestHandler = async (req, res, next) => {
 };
 
 export const loginUser: RequestHandler = async (req, res, next) => {
-  // TODO: integrate jwt passport token
-
   // Find user object
   const user = await User.findOne({ username: req.body.username }).select(
     "password"
@@ -57,13 +58,38 @@ export const loginUser: RequestHandler = async (req, res, next) => {
       .json({ success: false, message: "Could not find user" });
   }
 
-  // Use found - compare password to find a match
+  // User found - compare password to find a match
+  // TODO: move validate password to its own function that returns bool
+  const match = await bcrypt.compare(req.body.password, user.password);
+
+  if (!match) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Incorrect password" });
+  }
+
+  // Authenticate user
+  // TODO: create issueJwt util function that we can pass user into,
+  // and it will do all this and return jwt
+
   const payload = {
-    username: user.username,
-    id: user._id,
+    sub: user._id,
+    // iat: Date.now, TODO: fix this
   };
 
-  return res
-    .status(200)
-    .json({ success: true, message: "Logged in successfully", payload });
+  const expiresIn = "1d";
+
+  const token = jwt.sign(payload, process.env.JWT_KEY as string, {
+    expiresIn,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logged in successfully",
+    token: "Bearer " + token,
+    expires: expiresIn,
+    user,
+  });
+
+  // TODO: catch errors - change format of function
 };

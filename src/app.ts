@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import passport from "passport";
 require("dotenv").config();
 
 const app = express();
@@ -16,20 +17,22 @@ db.once("open", () => console.log("Connected to database."));
 
 // Parse bodies of all incoming requests to populate req.body with JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cors());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
+// Pass global passport object into the configuration function
+require("./config/passport")(passport);
+
+// Initialise passport object on every request
+app.use(passport.initialize());
+
 // Make uploads folder static / publicly available
 app.use("/uploads", express.static("uploads"));
 
-// app.use(express.urlencoded());
-// app.use(cookieParser());
-// app.use(logger("dev"));
-
-// Connect routes to our app
-// Forward all requests targeting /todos to our todoRoutes
-// app.use("/todos", todoRoutes);
+// Connect routes
 app.use("/", routes);
 
 // Handle 404 errors
