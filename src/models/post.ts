@@ -6,7 +6,10 @@ const PostSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     message: { type: String, required: true, maxlength: 300, minlength: 1 },
     date: { type: Date, required: true, default: Date.now },
-    // TODO: replies, reposts, likes
+    replies: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    reposts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    parent: { type: Schema.Types.ObjectId, ref: "Post" },
   },
   {
     toJSON: { virtuals: true },

@@ -31,6 +31,7 @@ app.use(passport.initialize());
 
 // Make uploads folder static / publicly available
 app.use("/uploads", express.static("uploads"));
+app.use("/images", express.static("images"));
 
 // Connect routes
 app.use("/", routes);
