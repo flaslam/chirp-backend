@@ -4,9 +4,25 @@ import { RequestHandler } from "express";
 // Get all posts
 export const getAllPosts: RequestHandler = async (req, res) => {
   try {
+    const user: any = req.user;
+    let posts;
+
+    // Default filter to not show any reply posts in the main feed
+    let filter: any = { parent: { $in: [null] } };
+
+    // If we have a user, only show posts from users we follow
+    if (user) {
+      filter = {
+        parent: { $in: [null] },
+        $or: [{ user: user.following }, { user: user._id }],
+      };
+    }
+
     // Populate user ID with user object and sort in descending order
-    // TODO: maybe don't need to populate replies/likes/reposts other than count until details expand
-    const posts = await Post.find().populate("user").sort({ date: -1 });
+    posts = await Post.find(filter)
+      .populate("user replies reposts likes")
+      .sort({ date: -1 });
+
     return res.status(200).json(posts);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -18,21 +34,17 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 
 // Get single post by ID
 export const getPost: RequestHandler = async (req, res, next) => {
-  let post;
   try {
-    const post = await Post.findById(req.params.postId).populate("user");
+    const post = await Post.findById(req.params.postId)
+      .populate("user replies reposts likes replies.user parent")
+      .populate({ path: "replies", populate: { path: "user" } })
+      .populate({ path: "parent", populate: { path: "user" } });
+
     if (post === null) {
       return res.status(404).json({ message: "Cannot find post." });
     }
 
-    const children = await Post.find({ parent: req.params.postId }).populate(
-      "user"
-    );
-
-    // This saves us having to populate the user field again as we have this info stored
-    // post.user = req.user;
-
-    return res.status(200).json({ message: "Found post", post, children });
+    return res.status(200).json({ message: "Found post", post });
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -44,16 +56,31 @@ export const getPost: RequestHandler = async (req, res, next) => {
 // Create new post
 export const createPost: RequestHandler = async (req, res) => {
   const user: any = req.user;
-  console.log(req.body);
+
   const post = new Post({
     user: user.id,
     message: req.body.message,
-    parent: req.body.parent,
   });
+
+  const parent = req.body.parent;
+
+  if (parent) {
+    post.parent = parent;
+  }
+
   try {
     const newPost = await post.save();
 
+    // If this post has a parent (is a reply), add this to the parent Post.
+    if (parent) {
+      await Post.findByIdAndUpdate(parent, {
+        $addToSet: { replies: newPost._id },
+      });
+    }
+
+    // Populate user
     newPost.user = user;
+
     return res.status(201).json({
       success: true,
       message: "Successfully created new post",
@@ -70,6 +97,7 @@ export const createPost: RequestHandler = async (req, res) => {
 // TODO: delete post
 export const deletePost: RequestHandler = async (req, res, next) => {
   // const post = await Post.findOne({})
+  // Should remove post from its parent
 };
 
 export const getUserPosts: RequestHandler = async (req, res, next) => {
@@ -80,10 +108,46 @@ export const getUserPosts: RequestHandler = async (req, res, next) => {
     }
 
     // Populate user ID with user object and sort in descending order
-    const posts = await Post.find({ user: user.id }).populate("user").sort({
-      date: -1,
-    });
+    const posts = await Post.find({ user: user.id })
+      .populate("user replies reposts likes replies.user parent")
+      .sort({
+        date: -1,
+      });
+
     return res.status(200).json(posts);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+    return res.status(500);
+  }
+};
+
+// Add user from req to post's likes
+export const likePost: RequestHandler = async (req, res, next) => {
+  const user: any = req.user;
+  try {
+    if (user === undefined) {
+      return res.status(404).json({ message: "Cannot find user." });
+    }
+
+    // Like
+    if (req.body.like) {
+      await Post.findByIdAndUpdate(req.params.postId, {
+        $addToSet: { likes: user._id },
+      });
+      return res.status(200).json({ message: "Added like to post" });
+    }
+
+    // Unlike
+    if (!req.body.like) {
+      await Post.findByIdAndUpdate(req.params.postId, {
+        $pull: { likes: user._id },
+      });
+      return res.status(200).json({ message: "Removed like from post" });
+    }
+
+    return res.status(500).json({ message: "Could not process like" });
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });

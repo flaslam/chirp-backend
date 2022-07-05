@@ -28,8 +28,11 @@ export const createUser: RequestHandler = async (req, res, next) => {
     username: req.body.username,
     password: await bcrypt.hash(req.body.password, 10),
     displayName: req.body.displayName,
-    // photo: fileUrl,
   });
+
+  if (req.file && fileUrl) {
+    user.photo = fileUrl;
+  }
 
   try {
     const newUser = await user.save();
@@ -83,20 +86,20 @@ export const loginUser: RequestHandler = async (req, res, next) => {
     expiresIn,
   });
 
-  // TODO: make sure we don't return the user password here
+  // TODO: Make sure we don't return the user password
   return res.status(200).json({
     success: true,
     message: "Logged in successfully",
     token: "Bearer " + token,
     expires: expiresIn,
     iat: Date.now(),
-    user,
+    user: user,
   });
 
   // TODO: catch errors - change format of function
 };
 
-export const getUser: RequestHandler = async (req, res, next) => {
+export const getUserFromParam: RequestHandler = async (req, res, next) => {
   // Find user from name param
   try {
     const user = await User.findOne({ username: req.params.username });
@@ -113,9 +116,30 @@ export const getUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const returnUser: RequestHandler = async (req, res, next) => {
+export const getUserById: RequestHandler = async (req, res, next) => {
+  // Find user from body
   try {
-    const user = await User.findOne({ username: req.params.username });
+    const user = await User.findOne({ username: req.body.username });
+    if (user === null) {
+      return res.status(404).json({ message: "Cannot find user." });
+    }
+    req.user = user;
+    next();
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+    return res.status(500);
+  }
+};
+
+export const returnUser: RequestHandler = async (req, res, next) => {
+  // TODO: could this be done using getuserfromparams before this and just
+  // pulling from there
+  try {
+    const user = await User.findOne({ username: req.params.username }).populate(
+      "followers following"
+    );
     if (user === null) {
       return res.status(404).json({ message: "Cannot find user." });
     }
@@ -127,3 +151,86 @@ export const returnUser: RequestHandler = async (req, res, next) => {
     return res.status(500);
   }
 };
+
+export const followUser: RequestHandler = async (req, res, next) => {
+  try {
+    // Find the user we want to follow from params
+    const userToFollow = await User.findOne({ username: req.params.username });
+    if (userToFollow === null) {
+      return res.status(404).json({ message: "Cannot find user." });
+    }
+
+    // Find the user initiating the follow from body
+    const user = await User.findOne({ username: req.body.username });
+    if (user === null) {
+      return res.status(404).json({ message: "Cannot find user." });
+    }
+
+    if (!userToFollow || !user) {
+      return res.status(500).json({ message: "Users could not be found" });
+    }
+
+    // We have both users
+    if (req.body.follow) {
+      console.log(user.username + " will follow " + userToFollow.username);
+      // add to set so if not already in, then add.
+      await User.updateOne(
+        { _id: user._id },
+        { $addToSet: { following: userToFollow._id } }
+      );
+
+      console.log(user._id);
+
+      await User.updateOne(
+        { _id: userToFollow._id },
+        { $addToSet: { followers: user._id } }
+      );
+
+      console.log(userToFollow._id);
+
+      return res.status(200).json({ message: "Followed user" });
+    }
+
+    if (!req.body.follow) {
+      // Unfollow
+      await User.updateOne(
+        { _id: userToFollow._id },
+        { $pull: { followers: user._id } }
+      );
+      await User.updateOne(
+        { _id: user._id },
+        { $pull: { following: userToFollow._id } }
+      );
+      return res.status(200).json({ message: "Unfollowed user" });
+    }
+
+    return res
+      .status(500)
+      .json({ message: "Could not update following status" });
+  } catch {
+    return res.status(500);
+  }
+};
+
+export const unfollowUser: RequestHandler = async (req, res, next) => {
+  try {
+    return res.status(200).json({ message: "Unfollowed user" });
+  } catch {
+    return res.status(500);
+  }
+};
+
+// // Verify token with JWT and set our auth data so we have access to user ID
+// export const verifyKey: RequestHandler = async (req, res, next) => {
+//   if (!req.token) return next();
+//   jwt.verify(req.token, process.env.JWT_KEY, (err, res) => {
+//     if (err) {
+//       return res.status(400).json(err);
+//     }
+
+//     req.authData = res;
+
+//     next();
+//   });
+//   // next();
+// }

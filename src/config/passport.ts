@@ -1,7 +1,9 @@
 import passport from "passport";
 import passportJwt from "passport-jwt";
+import passportAnonymous from "passport-anonymous";
 const JwtStrategy = passportJwt.Strategy;
 const ExtractJwt = passportJwt.ExtractJwt;
+const AnonymousStrategy = passportAnonymous.Strategy;
 
 import User from "../models/user";
 
@@ -25,4 +27,5 @@ const strategy = new JwtStrategy(options, (payload, done) => {
 
 module.exports = (passport: passport.PassportStatic) => {
   passport.use(strategy);
+  passport.use(new AnonymousStrategy());
 };

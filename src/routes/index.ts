@@ -4,12 +4,16 @@ import {
   createPost,
   getPost,
   getUserPosts,
+  likePost,
 } from "../controllers/postController";
 import {
   createUser,
   loginUser,
-  getUser,
+  getUserFromParam,
   returnUser,
+  followUser,
+  unfollowUser,
+  getUserById,
 } from "../controllers/userController";
 import passport from "passport";
 import { upload } from "../lib/upload";
@@ -17,17 +21,29 @@ import { upload } from "../lib/upload";
 const router = Router();
 
 // Post routes
-router.get("/", getAllPosts);
+// router.get("/", getAllPosts);
+router.get(
+  "/",
+  passport.authenticate(["jwt", "anonymous"], { session: false }),
+  getAllPosts
+);
 router.post("/", passport.authenticate("jwt", { session: false }), createPost);
-router.get("/:username/status/:postId", getUser, getPost);
-router.delete("/:userId/status/:postId");
+router.get("/:username/status/:postId", getUserFromParam, getPost);
+router.delete("/:username/status/:postId");
 
 // User routes
-router.get("/:username", getUser, returnUser);
-router.get("/:username/status", getUser, getUserPosts);
+router.get("/:username", getUserFromParam, returnUser);
+router.get("/:username/status", getUserFromParam, getUserPosts);
 router.post("/signup", upload.single("photo"), createUser); // upload.single("photo"),
 router.post("/login", loginUser);
-router.patch("/:userId/photo");
-router.patch("/:userId/profile"); // update name, bio, location, photo, header, birth date, website
+router.patch("/:username/photo");
+router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
+
+// Updates
+router.patch("/:username/follow", followUser);
+router.patch("/:username/unfollow", unfollowUser);
+
+// Like post
+router.patch("/:username/status/:postId/like", getUserById, likePost);
 
 export default router;
