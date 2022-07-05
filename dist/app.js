@@ -41,4 +41,4 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
     res.status(500).json({ message: err.message });
 });
-app.listen(process.env.PORT);
+app.listen(process.env.PORT || 5000);
