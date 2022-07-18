@@ -46,7 +46,7 @@ var UserSchema = new mongoose_1.Schema({
     toJSON: { virtuals: true },
 });
 // Virtual for date joined
-UserSchema.virtual("dateJoinedFormatted").get(function () {
+UserSchema.virtual("joinDateFormatted").get(function () {
     return luxon_1.DateTime.fromJSDate(this.joinDate).toLocaleString(luxon_1.DateTime.DATE_MED);
 });
 const User = mongoose_1.default.model("User", UserSchema);

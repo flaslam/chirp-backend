@@ -14,6 +14,7 @@ import {
   followUser,
   unfollowUser,
   getUserById,
+  updateProfile,
 } from "../controllers/userController";
 import passport from "passport";
 import { upload } from "../lib/upload";
@@ -36,8 +37,15 @@ router.get("/:username", getUserFromParam, returnUser);
 router.get("/:username/status", getUserFromParam, getUserPosts);
 router.post("/signup", upload.single("photo"), createUser); // upload.single("photo"),
 router.post("/login", loginUser);
-router.patch("/:username/photo");
-router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
+
+// User update profile
+router.patch(
+  "/:username",
+  passport.authenticate("jwt", { session: false }),
+  updateProfile
+);
+// router.patch("/:username/photo");
+// router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
 
 // Updates
 router.patch("/:username/follow", followUser);

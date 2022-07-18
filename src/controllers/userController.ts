@@ -220,17 +220,23 @@ export const unfollowUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-// // Verify token with JWT and set our auth data so we have access to user ID
-// export const verifyKey: RequestHandler = async (req, res, next) => {
-//   if (!req.token) return next();
-//   jwt.verify(req.token, process.env.JWT_KEY, (err, res) => {
-//     if (err) {
-//       return res.status(400).json(err);
-//     }
+export const updateProfile: RequestHandler = async (req, res, next) => {
+  if (!req.user) return res.status(500).json({ message: "No authorised user" });
+  // We are dealing with form data if uploading images so we have to use multer.
 
-//     req.authData = res;
+  try {
+    let updatedValues: any = {};
 
-//     next();
-//   });
-//   // next();
-// }
+    if (req.body.name) updatedValues.displayName = req.body.name;
+    if (req.body.bio) updatedValues.bio = req.body.bio;
+    if (req.body.location) updatedValues.location = req.body.location;
+    if (req.body.website) updatedValues.url = req.body.website;
+
+    //@ts-ignore
+    await User.findOneAndUpdate(req.user._id, updatedValues);
+
+    return res.status(200).json({ message: "User profile updated" });
+  } catch (err) {
+    return res.status(400).json({ message: err });
+  }
+};

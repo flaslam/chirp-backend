@@ -20,8 +20,10 @@ router.get("/:username", userController_1.getUserFromParam, userController_1.ret
 router.get("/:username/status", userController_1.getUserFromParam, postController_1.getUserPosts);
 router.post("/signup", upload_1.upload.single("photo"), userController_1.createUser); // upload.single("photo"),
 router.post("/login", userController_1.loginUser);
-router.patch("/:username/photo");
-router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
+// User update profile
+router.patch("/:username", passport_1.default.authenticate("jwt", { session: false }), userController_1.updateProfile);
+// router.patch("/:username/photo");
+// router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
 // Updates
 router.patch("/:username/follow", userController_1.followUser);
 router.patch("/:username/unfollow", userController_1.unfollowUser);

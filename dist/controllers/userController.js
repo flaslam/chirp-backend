@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unfollowUser = exports.followUser = exports.returnUser = exports.getUserById = exports.getUserFromParam = exports.loginUser = exports.createUser = void 0;
+exports.updateProfile = exports.unfollowUser = exports.followUser = exports.returnUser = exports.getUserById = exports.getUserFromParam = exports.loginUser = exports.createUser = void 0;
 const user_1 = __importDefault(require("../models/user"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -190,15 +190,26 @@ const unfollowUser = async (req, res, next) => {
     }
 };
 exports.unfollowUser = unfollowUser;
-// // Verify token with JWT and set our auth data so we have access to user ID
-// export const verifyKey: RequestHandler = async (req, res, next) => {
-//   if (!req.token) return next();
-//   jwt.verify(req.token, process.env.JWT_KEY, (err, res) => {
-//     if (err) {
-//       return res.status(400).json(err);
-//     }
-//     req.authData = res;
-//     next();
-//   });
-//   // next();
-// }
+const updateProfile = async (req, res, next) => {
+    if (!req.user)
+        return res.status(500).json({ message: "No authorised user" });
+    // We are dealing with form data if uploading images so we have to use multer.
+    try {
+        let updatedValues = {};
+        if (req.body.name)
+            updatedValues.displayName = req.body.name;
+        if (req.body.bio)
+            updatedValues.bio = req.body.bio;
+        if (req.body.location)
+            updatedValues.location = req.body.location;
+        if (req.body.website)
+            updatedValues.url = req.body.website;
+        //@ts-ignore
+        await user_1.default.findOneAndUpdate(req.user._id, updatedValues);
+        return res.status(200).json({ message: "User profile updated" });
+    }
+    catch (err) {
+        return res.status(400).json({ message: err });
+    }
+};
+exports.updateProfile = updateProfile;

@@ -37,9 +37,15 @@ exports.getAllPosts = getAllPosts;
 const getPost = async (req, res, next) => {
     try {
         const post = await post_1.default.findById(req.params.postId)
-            .populate("user replies reposts likes replies.user parent")
-            .populate({ path: "replies", populate: { path: "user" } })
-            .populate({ path: "parent", populate: { path: "user" } });
+            .populate("user replies reposts likes parent")
+            .populate({
+            path: "replies",
+            populate: { path: "user parent replies likes reposts" },
+        })
+            .populate({
+            path: "parent",
+            populate: { path: "user replies likes reposts" },
+        });
         if (post === null) {
             return res.status(404).json({ message: "Cannot find post." });
         }

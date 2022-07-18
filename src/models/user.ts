@@ -28,7 +28,7 @@ var UserSchema = new Schema(
 );
 
 // Virtual for date joined
-UserSchema.virtual("dateJoinedFormatted").get(function () {
+UserSchema.virtual("joinDateFormatted").get(function () {
   return DateTime.fromJSDate(this.joinDate).toLocaleString(DateTime.DATE_MED);
 });
 
