@@ -21,7 +21,9 @@ const storage = multer_1.default.diskStorage({
 });
 const fileFilter = (req, file, cb) => {
     // removing null will throw an error
-    if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+    if (file.mimetype === "image/jpeg" ||
+        file.mimetype === "image/png" ||
+        file.mimetype === "image/gif") {
         // Accept a file
         cb(null, true);
     }
