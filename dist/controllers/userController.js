@@ -191,6 +191,7 @@ const unfollowUser = async (req, res, next) => {
 };
 exports.unfollowUser = unfollowUser;
 const updateProfile = async (req, res, next) => {
+    var _a;
     if (!req.user)
         return res.status(500).json({ message: "No authorised user" });
     // We are dealing with form data if uploading images so we have to use multer.
@@ -205,6 +206,13 @@ const updateProfile = async (req, res, next) => {
             updatedValues.location = req.body.location;
         if (req.body.website)
             updatedValues.url = req.body.website;
+        if (req.file) {
+            // Convert path from local to accessible one (replace \ with /)
+            let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
+            if (req.file && fileUrl) {
+                updatedValues.photo = fileUrl;
+            }
+        }
         //@ts-ignore
         await user_1.default.findOneAndUpdate(req.user._id, updatedValues);
         return res.status(200).json({ message: "User profile updated" });

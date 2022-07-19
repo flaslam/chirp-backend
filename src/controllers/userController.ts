@@ -228,11 +228,18 @@ export const updateProfile: RequestHandler = async (req, res, next) => {
     console.log(req.body);
 
     let updatedValues: any = {};
-
     if (req.body.name) updatedValues.displayName = req.body.name;
     if (req.body.bio) updatedValues.bio = req.body.bio;
     if (req.body.location) updatedValues.location = req.body.location;
     if (req.body.website) updatedValues.url = req.body.website;
+
+    if (req.file) {
+      // Convert path from local to accessible one (replace \ with /)
+      let fileUrl = req.file?.path.replace(/\\/g, "/");
+      if (req.file && fileUrl) {
+        updatedValues.photo = fileUrl;
+      }
+    }
 
     //@ts-ignore
     await User.findOneAndUpdate(req.user._id, updatedValues);

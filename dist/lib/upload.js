@@ -12,7 +12,7 @@ const storage = multer_1.default.diskStorage({
     },
     filename: function (req, file, cb) {
         // TODO: change this to id
-        console.log(req.body);
+        // console.log(req.body);
         const username = req.body.username;
         const extension = file.mimetype.split("/")[1];
         const fileName = username + "." + extension;
