@@ -233,18 +233,29 @@ export const updateProfile: RequestHandler = async (req, res, next) => {
     if (req.body.location) updatedValues.location = req.body.location;
     if (req.body.website) updatedValues.url = req.body.website;
 
-    if (req.file) {
-      // Convert path from local to accessible one (replace \ with /)
-      let fileUrl = req.file?.path.replace(/\\/g, "/");
-      if (req.file && fileUrl) {
-        updatedValues.photo = fileUrl;
-      }
+    // Convert path from local to accessible one (replace \ with /)
+    let fileUrl = req.file?.path.replace(/\\/g, "/");
+    if (req.file && fileUrl) {
+      updatedValues.photo = fileUrl;
+      console.log(fileUrl);
     }
 
-    //@ts-ignore
-    await User.findOneAndUpdate(req.user._id, updatedValues);
+    console.log(req.user);
 
-    return res.status(200).json({ message: "User profile updated" });
+    // console.log(req.user._id);
+
+    if (!req.user)
+      return res.status(400).json({ message: "No user logged in." });
+
+    let user = await User.findOneAndUpdate(
+      //@ts-ignore
+      { _id: req.user._id },
+      updatedValues
+    );
+
+    return res
+      .status(200)
+      .json({ message: "User profile updated", user: user });
   } catch (err) {
     return res.status(400).json({ message: err });
   }

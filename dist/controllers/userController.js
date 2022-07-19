@@ -206,16 +206,22 @@ const updateProfile = async (req, res, next) => {
             updatedValues.location = req.body.location;
         if (req.body.website)
             updatedValues.url = req.body.website;
-        if (req.file) {
-            // Convert path from local to accessible one (replace \ with /)
-            let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
-            if (req.file && fileUrl) {
-                updatedValues.photo = fileUrl;
-            }
+        // Convert path from local to accessible one (replace \ with /)
+        let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
+        if (req.file && fileUrl) {
+            updatedValues.photo = fileUrl;
+            console.log(fileUrl);
         }
+        console.log(req.user);
+        // console.log(req.user._id);
+        if (!req.user)
+            return res.status(400).json({ message: "No user logged in." });
+        let user = await user_1.default.findOneAndUpdate(
         //@ts-ignore
-        await user_1.default.findOneAndUpdate(req.user._id, updatedValues);
-        return res.status(200).json({ message: "User profile updated" });
+        { _id: req.user._id }, updatedValues);
+        return res
+            .status(200)
+            .json({ message: "User profile updated", user: user });
     }
     catch (err) {
         return res.status(400).json({ message: err });
