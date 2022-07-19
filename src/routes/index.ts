@@ -39,9 +39,11 @@ router.post("/signup", upload.single("photo"), createUser); // upload.single("ph
 router.post("/login", loginUser);
 
 // User update profile
+// TODO: Multer needs to populate our body in middleware
 router.patch(
   "/:username",
   passport.authenticate("jwt", { session: false }),
+  upload.single("photo"),
   updateProfile
 );
 // router.patch("/:username/photo");

@@ -195,6 +195,7 @@ const updateProfile = async (req, res, next) => {
         return res.status(500).json({ message: "No authorised user" });
     // We are dealing with form data if uploading images so we have to use multer.
     try {
+        console.log(req.body);
         let updatedValues = {};
         if (req.body.name)
             updatedValues.displayName = req.body.name;

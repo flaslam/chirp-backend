@@ -225,6 +225,8 @@ export const updateProfile: RequestHandler = async (req, res, next) => {
   // We are dealing with form data if uploading images so we have to use multer.
 
   try {
+    console.log(req.body);
+
     let updatedValues: any = {};
 
     if (req.body.name) updatedValues.displayName = req.body.name;

@@ -21,7 +21,8 @@ router.get("/:username/status", userController_1.getUserFromParam, postControlle
 router.post("/signup", upload_1.upload.single("photo"), userController_1.createUser); // upload.single("photo"),
 router.post("/login", userController_1.loginUser);
 // User update profile
-router.patch("/:username", passport_1.default.authenticate("jwt", { session: false }), userController_1.updateProfile);
+// TODO: Multer needs to populate our body in middleware
+router.patch("/:username", passport_1.default.authenticate("jwt", { session: false }), upload_1.upload.single("photo"), userController_1.updateProfile);
 // router.patch("/:username/photo");
 // router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
 // Updates
