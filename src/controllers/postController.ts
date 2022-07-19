@@ -20,7 +20,8 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 
     // Populate user ID with user object and sort in descending order
     posts = await Post.find(filter)
-      .populate("user replies reposts likes")
+      // .populate("user parent replies reposts likes")
+      .populate("user replies reposts likes parent")
       .sort({ date: -1 });
 
     return res.status(200).json(posts);
@@ -43,7 +44,7 @@ export const getPost: RequestHandler = async (req, res, next) => {
       })
       .populate({
         path: "parent",
-        populate: { path: "user replies likes reposts" },
+        populate: { path: "user replies reposts" },
       });
 
     if (post === null) {

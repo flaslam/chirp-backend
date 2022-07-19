@@ -21,7 +21,8 @@ const getAllPosts = async (req, res) => {
         }
         // Populate user ID with user object and sort in descending order
         posts = await post_1.default.find(filter)
-            .populate("user replies reposts likes")
+            // .populate("user parent replies reposts likes")
+            .populate("user replies reposts likes parent")
             .sort({ date: -1 });
         return res.status(200).json(posts);
     }
@@ -44,7 +45,7 @@ const getPost = async (req, res, next) => {
         })
             .populate({
             path: "parent",
-            populate: { path: "user replies likes reposts" },
+            populate: { path: "user replies reposts" },
         });
         if (post === null) {
             return res.status(404).json({ message: "Cannot find post." });
