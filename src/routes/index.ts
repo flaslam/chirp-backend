@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import {
   getAllPosts,
   createPost,
@@ -17,7 +17,11 @@ import {
   updateProfile,
 } from "../controllers/userController";
 import passport from "passport";
-import { upload } from "../lib/upload";
+import { upload, uploadMedia } from "../lib/upload";
+import multer from "multer";
+
+// Parse form data
+const parseForm = multer().any();
 
 const router = Router();
 
@@ -28,7 +32,13 @@ router.get(
   passport.authenticate(["jwt", "anonymous"], { session: false }),
   getAllPosts
 );
-router.post("/", passport.authenticate("jwt", { session: false }), createPost);
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  // parseForm,
+  uploadMedia.single("media"),
+  createPost
+);
 router.get("/:username/status/:postId", getUserFromParam, getPost);
 router.delete("/:username/status/:postId");
 

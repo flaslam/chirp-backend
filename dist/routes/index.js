@@ -8,11 +8,16 @@ const postController_1 = require("../controllers/postController");
 const userController_1 = require("../controllers/userController");
 const passport_1 = __importDefault(require("passport"));
 const upload_1 = require("../lib/upload");
+const multer_1 = __importDefault(require("multer"));
+// Parse form data
+const parseForm = (0, multer_1.default)().any();
 const router = (0, express_1.Router)();
 // Post routes
 // router.get("/", getAllPosts);
 router.get("/", passport_1.default.authenticate(["jwt", "anonymous"], { session: false }), postController_1.getAllPosts);
-router.post("/", passport_1.default.authenticate("jwt", { session: false }), postController_1.createPost);
+router.post("/", passport_1.default.authenticate("jwt", { session: false }), 
+// parseForm,
+upload_1.uploadMedia.single("media"), postController_1.createPost);
 router.get("/:username/status/:postId", userController_1.getUserFromParam, postController_1.getPost);
 router.delete("/:username/status/:postId");
 // User routes

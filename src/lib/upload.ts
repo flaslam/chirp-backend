@@ -43,4 +43,23 @@ export const upload = multer({
   fileFilter,
 });
 
-// export const
+const mediaStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/media/");
+  },
+  filename: function (req, file, cb) {
+    //@ts-ignore
+    const username = req.user.username;
+    // const username = req.body.username;
+    const extension = file.mimetype.split("/")[1];
+    const fileName = username + "_" + Date.now() + "." + extension;
+
+    cb(null, fileName);
+  },
+});
+
+export const uploadMedia = multer({
+  storage: mediaStorage,
+  limits: { fileSize: 1024 * 1024 * FILESIZE_LIMIT_MB },
+  fileFilter,
+});

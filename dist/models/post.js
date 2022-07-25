@@ -33,6 +33,7 @@ const PostSchema = new mongoose_1.Schema({
     reposts: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Post" }],
     likes: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }],
     parent: { type: mongoose_1.Schema.Types.ObjectId, ref: "Post" },
+    media: [{ type: String }],
 }, {
     toJSON: { virtuals: true },
 });

@@ -10,6 +10,7 @@ const PostSchema = new Schema(
     reposts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     parent: { type: Schema.Types.ObjectId, ref: "Post" },
+    media: [{ type: String }],
   },
   {
     toJSON: { virtuals: true },

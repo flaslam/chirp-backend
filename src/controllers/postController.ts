@@ -75,6 +75,16 @@ export const createPost: RequestHandler = async (req, res) => {
     post.parent = parent;
   }
 
+  console.log(req.file);
+
+  if (req.file) {
+    let fileUrl = req.file?.path.replace(/\\/g, "/");
+
+    const media = [fileUrl];
+
+    post.media = media;
+  }
+
   try {
     const newPost = await post.save();
 
@@ -85,7 +95,7 @@ export const createPost: RequestHandler = async (req, res) => {
       });
     }
 
-    // Populate user
+    // Populate user to return back to client
     newPost.user = user;
 
     return res.status(201).json({

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.upload = void 0;
+exports.uploadMedia = exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
 // Uploads
 const storage = multer_1.default.diskStorage({
@@ -38,4 +38,21 @@ exports.upload = (0, multer_1.default)({
     limits: { fileSize: 1024 * 1024 * FILESIZE_LIMIT_MB },
     fileFilter,
 });
-// export const
+const mediaStorage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./uploads/media/");
+    },
+    filename: function (req, file, cb) {
+        //@ts-ignore
+        const username = req.user.username;
+        // const username = req.body.username;
+        const extension = file.mimetype.split("/")[1];
+        const fileName = username + "_" + Date.now() + "." + extension;
+        cb(null, fileName);
+    },
+});
+exports.uploadMedia = (0, multer_1.default)({
+    storage: mediaStorage,
+    limits: { fileSize: 1024 * 1024 * FILESIZE_LIMIT_MB },
+    fileFilter,
+});

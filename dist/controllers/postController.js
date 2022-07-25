@@ -62,6 +62,7 @@ const getPost = async (req, res, next) => {
 exports.getPost = getPost;
 // Create new post
 const createPost = async (req, res) => {
+    var _a;
     const user = req.user;
     const post = new post_1.default({
         user: user.id,
@@ -71,6 +72,12 @@ const createPost = async (req, res) => {
     if (parent) {
         post.parent = parent;
     }
+    console.log(req.file);
+    if (req.file) {
+        let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
+        const media = [fileUrl];
+        post.media = media;
+    }
     try {
         const newPost = await post.save();
         // If this post has a parent (is a reply), add this to the parent Post.
@@ -79,7 +86,7 @@ const createPost = async (req, res) => {
                 $addToSet: { replies: newPost._id },
             });
         }
-        // Populate user
+        // Populate user to return back to client
         newPost.user = user;
         return res.status(201).json({
             success: true,
