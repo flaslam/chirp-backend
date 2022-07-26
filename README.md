@@ -4,9 +4,23 @@ Go to the [live deployed application](https://chirp-backend-flaslam.herokuapp.co
 
 Go to the [frontend repository](https://github.com/flaslam/chirp)
 
-## Running the development server
+## Technologies used on the frontend
 
-Run the development server with the command:
+- TypeScript
+- Next.js (React)
+- Tailwind CSS
+
+## Technologies used on the backend
+
+- TypeScript
+- Node.js
+- Express.js
+- MongoDB
+- Passport.js
+
+## Running the backend locally
+
+Run the application with the command:
 
 ```
 npm start
