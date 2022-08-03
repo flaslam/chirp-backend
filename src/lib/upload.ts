@@ -63,3 +63,6 @@ export const uploadMedia = multer({
   limits: { fileSize: 1024 * 1024 * FILESIZE_LIMIT_MB },
   fileFilter,
 });
+
+// Parse form data
+const parseForm = multer().any();

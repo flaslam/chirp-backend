@@ -1,10 +1,11 @@
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import {
   getAllPosts,
   createPost,
   getPost,
   getUserPosts,
   likePost,
+  deletePost,
 } from "../controllers/postController";
 import {
   createUser,
@@ -18,20 +19,18 @@ import {
 } from "../controllers/userController";
 import passport from "passport";
 import { upload, uploadMedia } from "../lib/upload";
-import multer from "multer";
-
-// Parse form data
-const parseForm = multer().any();
 
 const router = Router();
 
-// Post routes
-// router.get("/", getAllPosts);
+// POST ROUTES
+// Get all posts for timeline
 router.get(
   "/",
   passport.authenticate(["jwt", "anonymous"], { session: false }),
   getAllPosts
 );
+
+// Create a post
 router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
@@ -42,28 +41,41 @@ router.post(
 router.get("/:username/status/:postId", getUserFromParam, getPost);
 router.delete("/:username/status/:postId");
 
-// User routes
+// Like a post
+router.patch("/:username/status/:postId/like", getUserById, likePost);
+
+// Delete a post
+router.delete(
+  "/:username/status/:postId",
+  passport.authenticate("jwt", { session: false }),
+  deletePost
+);
+
+// USER ROUTES
+// Return a user object
 router.get("/:username", getUserFromParam, returnUser);
+
+// Get all posts from a user
 router.get("/:username/status", getUserFromParam, getUserPosts);
+
+// Create a new user
 router.post("/signup", upload.single("photo"), createUser); // upload.single("photo"),
+
+// Login a user
 router.post("/login", loginUser);
 
 // User update profile
-// TODO: Multer needs to populate our body in middleware
 router.patch(
   "/:username",
   passport.authenticate("jwt", { session: false }),
   upload.single("photo"),
   updateProfile
 );
-// router.patch("/:username/photo");
-// router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
 
-// Updates
+// Follow a user
 router.patch("/:username/follow", followUser);
-router.patch("/:username/unfollow", unfollowUser);
 
-// Like post
-router.patch("/:username/status/:postId/like", getUserById, likePost);
+// Unfollow a user
+router.patch("/:username/unfollow", unfollowUser);
 
 export default router;

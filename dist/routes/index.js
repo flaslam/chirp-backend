@@ -8,31 +8,33 @@ const postController_1 = require("../controllers/postController");
 const userController_1 = require("../controllers/userController");
 const passport_1 = __importDefault(require("passport"));
 const upload_1 = require("../lib/upload");
-const multer_1 = __importDefault(require("multer"));
-// Parse form data
-const parseForm = (0, multer_1.default)().any();
 const router = (0, express_1.Router)();
-// Post routes
-// router.get("/", getAllPosts);
+// POST ROUTES
+// Get all posts for timeline
 router.get("/", passport_1.default.authenticate(["jwt", "anonymous"], { session: false }), postController_1.getAllPosts);
+// Create a post
 router.post("/", passport_1.default.authenticate("jwt", { session: false }), 
 // parseForm,
 upload_1.uploadMedia.single("media"), postController_1.createPost);
 router.get("/:username/status/:postId", userController_1.getUserFromParam, postController_1.getPost);
 router.delete("/:username/status/:postId");
-// User routes
+// Like a post
+router.patch("/:username/status/:postId/like", userController_1.getUserById, postController_1.likePost);
+// Delete a post
+router.delete("/:username/status/:postId", passport_1.default.authenticate("jwt", { session: false }), postController_1.deletePost);
+// USER ROUTES
+// Return a user object
 router.get("/:username", userController_1.getUserFromParam, userController_1.returnUser);
+// Get all posts from a user
 router.get("/:username/status", userController_1.getUserFromParam, postController_1.getUserPosts);
+// Create a new user
 router.post("/signup", upload_1.upload.single("photo"), userController_1.createUser); // upload.single("photo"),
+// Login a user
 router.post("/login", userController_1.loginUser);
 // User update profile
-// TODO: Multer needs to populate our body in middleware
 router.patch("/:username", passport_1.default.authenticate("jwt", { session: false }), upload_1.upload.single("photo"), userController_1.updateProfile);
-// router.patch("/:username/photo");
-// router.patch("/:username/profile"); // update name, bio, location, photo, header, birth date, website
-// Updates
+// Follow a user
 router.patch("/:username/follow", userController_1.followUser);
+// Unfollow a user
 router.patch("/:username/unfollow", userController_1.unfollowUser);
-// Like post
-router.patch("/:username/status/:postId/like", userController_1.getUserById, postController_1.likePost);
 exports.default = router;

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.likePost = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
 const post_1 = __importDefault(require("../models/post"));
+const utils_1 = require("../lib/utils");
 // Get all posts
 const getAllPosts = async (req, res) => {
     try {
@@ -105,7 +106,41 @@ exports.createPost = createPost;
 // TODO: delete post
 const deletePost = async (req, res, next) => {
     // const post = await Post.findOne({})
-    // Should remove post from its parent
+    try {
+        // TODO: Check if post ID matches user ID
+        const post = await post_1.default.findById(req.params.postId);
+        if (!post) {
+            return res
+                .status(400)
+                .json({ success: false, message: "Post could not be found." });
+        }
+        // await Post.deleteOne(req.params.postId);
+        // await Post.findOneAndDelete(req.params.postId);
+        // Should remove post from its parent
+        // Delete all relevant media
+        if (post.media && post.media.length > 0) {
+            const pathToFile = String(post.media[0]);
+            console.log(pathToFile);
+            try {
+                (0, utils_1.deleteFile)(pathToFile);
+            }
+            catch (err) {
+                console.log(err);
+                // return res
+                //   .status(400)
+                //   .json({ success: false, message: "Could not delete media" });
+            }
+        }
+        post.delete();
+        return res
+            .status(200)
+            .json({ success: true, message: "Successfully deleted post" });
+    }
+    catch (err) {
+        return res
+            .status(400)
+            .json({ success: false, message: "Could not delete post.", err: err });
+    }
 };
 exports.deletePost = deletePost;
 const getUserPosts = async (req, res, next) => {

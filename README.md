@@ -26,6 +26,12 @@ Run the application with the command:
 npm start
 ```
 
+Track changes to compile TypeScript to JavaScript
+
+```
+tsc -w
+```
+
 Example of .env file that must be placed in the root folder:
 
 ```

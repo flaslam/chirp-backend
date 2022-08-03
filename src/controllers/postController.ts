@@ -1,5 +1,6 @@
 import Post from "../models/post";
 import { RequestHandler } from "express";
+import { deleteFile } from "../lib/utils";
 
 // Get all posts
 export const getAllPosts: RequestHandler = async (req, res) => {
@@ -114,7 +115,47 @@ export const createPost: RequestHandler = async (req, res) => {
 // TODO: delete post
 export const deletePost: RequestHandler = async (req, res, next) => {
   // const post = await Post.findOne({})
-  // Should remove post from its parent
+
+  try {
+    // TODO: Check if post ID matches user ID
+
+    const post = await Post.findById(req.params.postId);
+
+    if (!post) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Post could not be found." });
+    }
+
+    // await Post.deleteOne(req.params.postId);
+    // await Post.findOneAndDelete(req.params.postId);
+
+    // Should remove post from its parent
+
+    // Delete all relevant media
+    if (post.media && post.media.length > 0) {
+      const pathToFile: string = String(post.media[0]);
+      console.log(pathToFile);
+      try {
+        deleteFile(pathToFile);
+      } catch (err) {
+        console.log(err);
+        // return res
+        //   .status(400)
+        //   .json({ success: false, message: "Could not delete media" });
+      }
+    }
+
+    post.delete();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Successfully deleted post" });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Could not delete post.", err: err });
+  }
 };
 
 export const getUserPosts: RequestHandler = async (req, res, next) => {
