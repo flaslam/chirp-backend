@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon dist/app.js"
+    "start": "nodemon dist/app.js",
+    "compile": "tsc && node dist/app.js",
+    "dev": "nodemon --watch src/ --exec \"npm run compile\" --verbose -e ts"
   },
   "author": "",
   "license": "ISC",
