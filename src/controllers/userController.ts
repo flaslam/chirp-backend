@@ -14,26 +14,15 @@ export const createUser: RequestHandler = async (req, res, next) => {
       .json({ success: false, message: "User already exists" });
   }
 
-  // TODO: check if photo file is attached
-  // if not, set default photo to user.
-
-  // TODO: change filename to user ID? has to happen after creating obj,
-  // so split up the sign up process into multiple steps.
-  // create the profile after creating the account to fill in all optionals
-
-  // Convert path from local to accessible one (replace \ with /)
-  // let fileUrl = req.file?.path.replace(/\\/g, "/");
-
-  let fileName = "";
-  if (req.body.fileName) fileName = req.body.fileName;
-
   const user = new User({
     username: req.body.username,
     password: await bcrypt.hash(req.body.password, 10),
     displayName: req.body.displayName,
   });
 
-  if (req.file && fileName) {
+  // If we have uploaded an image, set the photo URL
+  if (req.body.fileName) {
+    let fileName = req.body.fileName;
     user.photo = fileName;
   }
 
