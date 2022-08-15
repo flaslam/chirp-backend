@@ -22,6 +22,11 @@ PostSchema.virtual("dateFormatted").get(function () {
   return DateTime.fromJSDate(this.date).toLocaleString(DateTime.DATE_MED);
 });
 
+// Virtual for time
+PostSchema.virtual("time").get(function () {
+  return DateTime.fromJSDate(this.date).toFormat("h:mm a");
+});
+
 const Post = mongoose.model("Post", PostSchema);
 
 export default Post;

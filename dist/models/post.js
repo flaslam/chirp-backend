@@ -41,5 +41,9 @@ const PostSchema = new mongoose_1.Schema({
 PostSchema.virtual("dateFormatted").get(function () {
     return luxon_1.DateTime.fromJSDate(this.date).toLocaleString(luxon_1.DateTime.DATE_MED);
 });
+// Virtual for time
+PostSchema.virtual("time").get(function () {
+    return luxon_1.DateTime.fromJSDate(this.date).toFormat("h:mm a");
+});
 const Post = mongoose_1.default.model("Post", PostSchema);
 exports.default = Post;
