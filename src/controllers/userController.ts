@@ -22,7 +22,10 @@ export const createUser: RequestHandler = async (req, res, next) => {
   // create the profile after creating the account to fill in all optionals
 
   // Convert path from local to accessible one (replace \ with /)
-  let fileUrl = req.file?.path.replace(/\\/g, "/");
+  // let fileUrl = req.file?.path.replace(/\\/g, "/");
+
+  let fileName = "";
+  if (req.body.fileName) fileName = req.body.fileName;
 
   const user = new User({
     username: req.body.username,
@@ -30,8 +33,8 @@ export const createUser: RequestHandler = async (req, res, next) => {
     displayName: req.body.displayName,
   });
 
-  if (req.file && fileUrl) {
-    user.photo = fileUrl;
+  if (req.file && fileName) {
+    user.photo = fileName;
   }
 
   try {
@@ -232,17 +235,7 @@ export const updateProfile: RequestHandler = async (req, res, next) => {
     if (req.body.bio) updatedValues.bio = req.body.bio;
     if (req.body.location) updatedValues.location = req.body.location;
     if (req.body.website) updatedValues.url = req.body.website;
-
-    // Convert path from local to accessible one (replace \ with /)
-    let fileUrl = req.file?.path.replace(/\\/g, "/");
-    if (req.file && fileUrl) {
-      updatedValues.photo = fileUrl;
-      console.log(fileUrl);
-    }
-
-    console.log(req.user);
-
-    // console.log(req.user._id);
+    if (req.body.fileName) updatedValues.photo = req.body.fileName;
 
     if (!req.user)
       return res.status(400).json({ message: "No user logged in." });

@@ -7,15 +7,13 @@ const express_1 = require("express");
 const postController_1 = require("../controllers/postController");
 const userController_1 = require("../controllers/userController");
 const passport_1 = __importDefault(require("passport"));
-const upload_1 = require("../lib/upload");
+const storage_1 = require("../lib/storage");
 const router = (0, express_1.Router)();
 // POST ROUTES
 // Get all posts for timeline
 router.get("/", passport_1.default.authenticate(["jwt", "anonymous"], { session: false }), postController_1.getAllPosts);
 // Create a post
-router.post("/", passport_1.default.authenticate("jwt", { session: false }), 
-// parseForm,
-upload_1.uploadMedia.single("media"), postController_1.createPost);
+router.post("/", passport_1.default.authenticate("jwt", { session: false }), storage_1.upload.single("media"), storage_1.uploadImage, postController_1.createPost);
 router.get("/:username/status/:postId", userController_1.getUserFromParam, postController_1.getPost);
 router.delete("/:username/status/:postId");
 // Like a post
@@ -28,11 +26,11 @@ router.get("/:username", userController_1.getUserFromParam, userController_1.ret
 // Get all posts from a user
 router.get("/:username/status", userController_1.getUserFromParam, postController_1.getUserPosts);
 // Create a new user
-router.post("/signup", upload_1.upload.single("photo"), userController_1.createUser); // upload.single("photo"),
+router.post("/signup", storage_1.upload.single("photo"), storage_1.uploadImage, userController_1.createUser); // upload.single("photo"),
 // Login a user
 router.post("/login", userController_1.loginUser);
 // User update profile
-router.patch("/:username", passport_1.default.authenticate("jwt", { session: false }), upload_1.upload.single("photo"), userController_1.updateProfile);
+router.patch("/:username", passport_1.default.authenticate("jwt", { session: false }), storage_1.upload.single("photo"), storage_1.uploadImage, userController_1.updateProfile);
 // Follow a user
 router.patch("/:username/follow", userController_1.followUser);
 // Unfollow a user

@@ -9,7 +9,6 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // TODO: move functions to utils file for verifying pw, issuing token, and generating pw
 const createUser = async (req, res, next) => {
-    var _a;
     // Check if username already exists in database
     const checkUserExists = await user_1.default.findOne({ username: req.body.username });
     if (checkUserExists) {
@@ -23,14 +22,17 @@ const createUser = async (req, res, next) => {
     // so split up the sign up process into multiple steps.
     // create the profile after creating the account to fill in all optionals
     // Convert path from local to accessible one (replace \ with /)
-    let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
+    // let fileUrl = req.file?.path.replace(/\\/g, "/");
+    let fileName = "";
+    if (req.body.fileName)
+        fileName = req.body.fileName;
     const user = new user_1.default({
         username: req.body.username,
         password: await bcrypt_1.default.hash(req.body.password, 10),
         displayName: req.body.displayName,
     });
-    if (req.file && fileUrl) {
-        user.photo = fileUrl;
+    if (req.file && fileName) {
+        user.photo = fileName;
     }
     try {
         const newUser = await user.save();
@@ -191,7 +193,6 @@ const unfollowUser = async (req, res, next) => {
 };
 exports.unfollowUser = unfollowUser;
 const updateProfile = async (req, res, next) => {
-    var _a;
     if (!req.user)
         return res.status(500).json({ message: "No authorised user" });
     // We are dealing with form data if uploading images so we have to use multer.
@@ -206,14 +207,8 @@ const updateProfile = async (req, res, next) => {
             updatedValues.location = req.body.location;
         if (req.body.website)
             updatedValues.url = req.body.website;
-        // Convert path from local to accessible one (replace \ with /)
-        let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
-        if (req.file && fileUrl) {
-            updatedValues.photo = fileUrl;
-            console.log(fileUrl);
-        }
-        console.log(req.user);
-        // console.log(req.user._id);
+        if (req.body.fileName)
+            updatedValues.photo = req.body.fileName;
         if (!req.user)
             return res.status(400).json({ message: "No user logged in." });
         let user = await user_1.default.findOneAndUpdate(

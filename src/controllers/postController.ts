@@ -1,6 +1,7 @@
 import Post from "../models/post";
 import { RequestHandler } from "express";
-import { deleteFile } from "../lib/utils";
+// import { deleteFile } from "../lib/utils";
+import { deleteFile } from "../lib/storage";
 
 // Get all posts
 export const getAllPosts: RequestHandler = async (req, res) => {
@@ -76,12 +77,13 @@ export const createPost: RequestHandler = async (req, res) => {
     post.parent = parent;
   }
 
-  console.log(req.file);
+  if (req.file != null) {
+    console.log(req.file);
+    // let fileUrl = req.file?.path.replace(/\\/g, "/");
 
-  if (req.file) {
-    let fileUrl = req.file?.path.replace(/\\/g, "/");
+    let fileName = req.body.fileName;
 
-    const media = [fileUrl];
+    const media = [fileName];
 
     post.media = media;
   }
@@ -112,7 +114,7 @@ export const createPost: RequestHandler = async (req, res) => {
   }
 };
 
-// TODO: delete post
+// Delete post
 export const deletePost: RequestHandler = async (req, res, next) => {
   // const post = await Post.findOne({})
 
@@ -135,9 +137,9 @@ export const deletePost: RequestHandler = async (req, res, next) => {
     // Delete all relevant media
     if (post.media && post.media.length > 0) {
       const pathToFile: string = String(post.media[0]);
-      console.log(pathToFile);
+      // console.log(pathToFile);
       try {
-        deleteFile(pathToFile);
+        await deleteFile(pathToFile);
       } catch (err) {
         console.log(err);
         // return res

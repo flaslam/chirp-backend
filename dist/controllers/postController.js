@@ -5,7 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.likePost = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
 const post_1 = __importDefault(require("../models/post"));
-const utils_1 = require("../lib/utils");
+// import { deleteFile } from "../lib/utils";
+const storage_1 = require("../lib/storage");
 // Get all posts
 const getAllPosts = async (req, res) => {
     try {
@@ -63,7 +64,6 @@ const getPost = async (req, res, next) => {
 exports.getPost = getPost;
 // Create new post
 const createPost = async (req, res) => {
-    var _a;
     const user = req.user;
     const post = new post_1.default({
         user: user.id,
@@ -73,10 +73,11 @@ const createPost = async (req, res) => {
     if (parent) {
         post.parent = parent;
     }
-    console.log(req.file);
-    if (req.file) {
-        let fileUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path.replace(/\\/g, "/");
-        const media = [fileUrl];
+    if (req.file != null) {
+        console.log(req.file);
+        // let fileUrl = req.file?.path.replace(/\\/g, "/");
+        let fileName = req.body.fileName;
+        const media = [fileName];
         post.media = media;
     }
     try {
@@ -103,7 +104,7 @@ const createPost = async (req, res) => {
     }
 };
 exports.createPost = createPost;
-// TODO: delete post
+// Delete post
 const deletePost = async (req, res, next) => {
     // const post = await Post.findOne({})
     try {
@@ -120,9 +121,9 @@ const deletePost = async (req, res, next) => {
         // Delete all relevant media
         if (post.media && post.media.length > 0) {
             const pathToFile = String(post.media[0]);
-            console.log(pathToFile);
+            // console.log(pathToFile);
             try {
-                (0, utils_1.deleteFile)(pathToFile);
+                await (0, storage_1.deleteFile)(pathToFile);
             }
             catch (err) {
                 console.log(err);

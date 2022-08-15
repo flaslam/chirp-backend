@@ -29,7 +29,7 @@ var UserSchema = new mongoose_1.Schema({
     username: { type: String, required: true, minlength: 1 },
     password: { type: String, required: true, minlength: 1, select: false },
     displayName: { type: String, required: true },
-    photo: { type: String, required: true, default: "images/default.png" },
+    photo: { type: String, required: true, default: "default" },
     joinDate: { type: Date, required: true, default: Date.now },
     followers: [
         { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true, default: [] },

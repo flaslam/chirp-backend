@@ -18,7 +18,7 @@ import {
   updateProfile,
 } from "../controllers/userController";
 import passport from "passport";
-import { upload, uploadMedia } from "../lib/upload";
+import { upload, uploadImage } from "../lib/storage";
 
 const router = Router();
 
@@ -34,8 +34,8 @@ router.get(
 router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
-  // parseForm,
-  uploadMedia.single("media"),
+  upload.single("media"),
+  uploadImage,
   createPost
 );
 router.get("/:username/status/:postId", getUserFromParam, getPost);
@@ -59,7 +59,7 @@ router.get("/:username", getUserFromParam, returnUser);
 router.get("/:username/status", getUserFromParam, getUserPosts);
 
 // Create a new user
-router.post("/signup", upload.single("photo"), createUser); // upload.single("photo"),
+router.post("/signup", upload.single("photo"), uploadImage, createUser); // upload.single("photo"),
 
 // Login a user
 router.post("/login", loginUser);
@@ -69,6 +69,7 @@ router.patch(
   "/:username",
   passport.authenticate("jwt", { session: false }),
   upload.single("photo"),
+  uploadImage,
   updateProfile
 );
 

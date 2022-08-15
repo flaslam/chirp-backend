@@ -17,19 +17,14 @@ Go to the [frontend repository](https://github.com/flaslam/chirp)
 - Express.js
 - MongoDB
 - Passport.js
+- Amazon AWS S3
 
 ## Running the backend locally
 
 Run the application with the command:
 
 ```
-npm start
-```
-
-Track changes to compile TypeScript to JavaScript
-
-```
-tsc -w
+npm run dev
 ```
 
 Example of .env file that must be placed in the root folder:
@@ -38,4 +33,8 @@ Example of .env file that must be placed in the root folder:
 PORT=
 MONGO_URI=
 JWT_KEY=
+BUCKET_NAME=
+BUCKET_REGION=
+ACCESS_KEY=
+SECRET_ACCESS_KEY=
 ```
