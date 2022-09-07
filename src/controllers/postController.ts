@@ -14,8 +14,13 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 
     // If we have a user, only show posts from users we follow
     if (user) {
+      // filter = {
+      //   parent: { $in: [null] },
+      //   $or: [{ user: user.following }, { user: user._id }],
+      // };
+
       filter = {
-        parent: { $in: [null] },
+        ...filter,
         $or: [{ user: user.following }, { user: user._id }],
       };
     }
@@ -78,13 +83,8 @@ export const createPost: RequestHandler = async (req, res) => {
   }
 
   if (req.file != null) {
-    console.log(req.file);
-    // let fileUrl = req.file?.path.replace(/\\/g, "/");
-
     let fileName = req.body.fileName;
-
     const media = [fileName];
-
     post.media = media;
   }
 
@@ -160,15 +160,22 @@ export const deletePost: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getUserPosts: RequestHandler = async (req, res, next) => {
+export const getUserPosts: RequestHandler = async (req, res) => {
   const user: any = req.user;
   try {
     if (user === undefined) {
       return res.status(404).json({ message: "Cannot find user." });
     }
 
+    // Default filter to not show any reply posts
+    let filter: any = { parent: { $in: [null] }, user: user.id };
+
+    if (req.body.filter !== undefined) {
+      filter = req.body.filter;
+    }
+
     // Populate user ID with user object and sort in descending order
-    const posts = await Post.find({ user: user.id })
+    const posts = await Post.find(filter)
       .populate("user replies reposts likes replies.user parent")
       .sort({
         date: -1,
@@ -180,6 +187,43 @@ export const getUserPosts: RequestHandler = async (req, res, next) => {
       return res.status(500).json({ message: err.message });
     }
     return res.status(500);
+  }
+};
+
+export const setFilterToIncludeReplies: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
+  const user: any = req.user;
+  try {
+    req.body.filter = { user: user.id };
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: err });
+  }
+};
+
+export const setFilterToMedia: RequestHandler = async (req, res, next) => {
+  const user: any = req.user;
+  try {
+    req.body.filter = {
+      user: user._id,
+      media: { $exists: true, $not: { $size: 0 } },
+    };
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: err });
+  }
+};
+
+export const setFilterToLikes: RequestHandler = async (req, res, next) => {
+  const user: any = req.user;
+  try {
+    req.body.filter = { likes: { $in: [user.id] } };
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: err });
   }
 };
 

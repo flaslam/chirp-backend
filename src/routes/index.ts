@@ -6,6 +6,9 @@ import {
   getUserPosts,
   likePost,
   deletePost,
+  setFilterToIncludeReplies,
+  setFilterToLikes,
+  setFilterToMedia,
 } from "../controllers/postController";
 import {
   createUser,
@@ -53,10 +56,32 @@ router.delete(
 
 // USER ROUTES
 // Return a user object
-router.get("/:username", getUserFromParam, returnUser);
+router.get("/:username/profile", getUserFromParam, returnUser);
 
 // Get all posts from a user
-router.get("/:username/status", getUserFromParam, getUserPosts);
+router.get("/:username", getUserFromParam, getUserPosts);
+
+// Get all posts from a user with all replies
+router.get(
+  "/:username/with_replies",
+  getUserFromParam,
+  setFilterToIncludeReplies,
+  getUserPosts
+);
+
+router.get(
+  "/:username/media",
+  getUserFromParam,
+  setFilterToMedia,
+  getUserPosts
+);
+
+router.get(
+  "/:username/likes",
+  getUserFromParam,
+  setFilterToLikes,
+  getUserPosts
+);
 
 // Create a new user
 router.post("/signup", upload.single("photo"), uploadImage, createUser); // upload.single("photo"),

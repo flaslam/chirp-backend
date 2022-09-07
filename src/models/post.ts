@@ -22,6 +22,14 @@ PostSchema.virtual("dateFormatted").get(function () {
   return DateTime.fromJSDate(this.date).toLocaleString(DateTime.DATE_MED);
 });
 
+// Virtual for relative date
+PostSchema.virtual("dateRelative").get(function () {
+  const date = DateTime.local();
+  const postDate = DateTime.fromJSDate(this.date);
+  const relativeDate = postDate.toRelative({ base: date });
+  return relativeDate;
+});
+
 // Virtual for time
 PostSchema.virtual("time").get(function () {
   return DateTime.fromJSDate(this.date).toFormat("h:mm a");

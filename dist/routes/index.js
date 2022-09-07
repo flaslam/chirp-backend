@@ -22,9 +22,13 @@ router.patch("/:username/status/:postId/like", userController_1.getUserById, pos
 router.delete("/:username/status/:postId", passport_1.default.authenticate("jwt", { session: false }), postController_1.deletePost);
 // USER ROUTES
 // Return a user object
-router.get("/:username", userController_1.getUserFromParam, userController_1.returnUser);
+router.get("/:username/profile", userController_1.getUserFromParam, userController_1.returnUser);
 // Get all posts from a user
-router.get("/:username/status", userController_1.getUserFromParam, postController_1.getUserPosts);
+router.get("/:username", userController_1.getUserFromParam, postController_1.getUserPosts);
+// Get all posts from a user with all replies
+router.get("/:username/with_replies", userController_1.getUserFromParam, postController_1.setFilterToIncludeReplies, postController_1.getUserPosts);
+router.get("/:username/media", userController_1.getUserFromParam, postController_1.setFilterToMedia, postController_1.getUserPosts);
+router.get("/:username/likes", userController_1.getUserFromParam, postController_1.setFilterToLikes, postController_1.getUserPosts);
 // Create a new user
 router.post("/signup", storage_1.upload.single("photo"), storage_1.uploadImage, userController_1.createUser); // upload.single("photo"),
 // Login a user

@@ -41,6 +41,13 @@ const PostSchema = new mongoose_1.Schema({
 PostSchema.virtual("dateFormatted").get(function () {
     return luxon_1.DateTime.fromJSDate(this.date).toLocaleString(luxon_1.DateTime.DATE_MED);
 });
+// Virtual for relative date
+PostSchema.virtual("dateRelative").get(function () {
+    const date = luxon_1.DateTime.local();
+    const postDate = luxon_1.DateTime.fromJSDate(this.date);
+    const relativeDate = postDate.toRelative({ base: date });
+    return relativeDate;
+});
 // Virtual for time
 PostSchema.virtual("time").get(function () {
     return luxon_1.DateTime.fromJSDate(this.date).toFormat("h:mm a");

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.likePost = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
+exports.likePost = exports.setFilterToLikes = exports.setFilterToMedia = exports.setFilterToIncludeReplies = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
 const post_1 = __importDefault(require("../models/post"));
 // import { deleteFile } from "../lib/utils";
 const storage_1 = require("../lib/storage");
@@ -16,8 +16,12 @@ const getAllPosts = async (req, res) => {
         let filter = { parent: { $in: [null] } };
         // If we have a user, only show posts from users we follow
         if (user) {
+            // filter = {
+            //   parent: { $in: [null] },
+            //   $or: [{ user: user.following }, { user: user._id }],
+            // };
             filter = {
-                parent: { $in: [null] },
+                ...filter,
                 $or: [{ user: user.following }, { user: user._id }],
             };
         }
@@ -74,8 +78,6 @@ const createPost = async (req, res) => {
         post.parent = parent;
     }
     if (req.file != null) {
-        console.log(req.file);
-        // let fileUrl = req.file?.path.replace(/\\/g, "/");
         let fileName = req.body.fileName;
         const media = [fileName];
         post.media = media;
@@ -144,14 +146,19 @@ const deletePost = async (req, res, next) => {
     }
 };
 exports.deletePost = deletePost;
-const getUserPosts = async (req, res, next) => {
+const getUserPosts = async (req, res) => {
     const user = req.user;
     try {
         if (user === undefined) {
             return res.status(404).json({ message: "Cannot find user." });
         }
+        // Default filter to not show any reply posts
+        let filter = { parent: { $in: [null] }, user: user.id };
+        if (req.body.filter !== undefined) {
+            filter = req.body.filter;
+        }
         // Populate user ID with user object and sort in descending order
-        const posts = await post_1.default.find({ user: user.id })
+        const posts = await post_1.default.find(filter)
             .populate("user replies reposts likes replies.user parent")
             .sort({
             date: -1,
@@ -166,6 +173,42 @@ const getUserPosts = async (req, res, next) => {
     }
 };
 exports.getUserPosts = getUserPosts;
+const setFilterToIncludeReplies = async (req, res, next) => {
+    const user = req.user;
+    try {
+        req.body.filter = { user: user.id };
+        next();
+    }
+    catch (err) {
+        return res.status(401).json({ message: err });
+    }
+};
+exports.setFilterToIncludeReplies = setFilterToIncludeReplies;
+const setFilterToMedia = async (req, res, next) => {
+    const user = req.user;
+    try {
+        req.body.filter = {
+            user: user._id,
+            media: { $exists: true, $not: { $size: 0 } },
+        };
+        next();
+    }
+    catch (err) {
+        return res.status(401).json({ message: err });
+    }
+};
+exports.setFilterToMedia = setFilterToMedia;
+const setFilterToLikes = async (req, res, next) => {
+    const user = req.user;
+    try {
+        req.body.filter = { likes: { $in: [user.id] } };
+        next();
+    }
+    catch (err) {
+        return res.status(401).json({ message: err });
+    }
+};
+exports.setFilterToLikes = setFilterToLikes;
 // Add user from req to post's likes
 const likePost = async (req, res, next) => {
     const user = req.user;
