@@ -25,11 +25,20 @@ const getAllPosts = async (req, res) => {
                 $or: [{ user: user.following }, { user: user._id }],
             };
         }
+        const limit = Number(req.query.limit);
+        const skip = Number(req.query.skip);
+        console.log(req.query.limit);
+        console.log(req.query.skip);
+        // if (!limit || !skip) {
+        //   return res.status(500);
+        // }
         // Populate user ID with user object and sort in descending order
         posts = await post_1.default.find(filter)
             // .populate("user parent replies reposts likes")
             .populate("user replies reposts likes parent")
-            .sort({ date: -1 });
+            .sort({ date: -1 })
+            .limit(limit)
+            .skip(skip);
         return res.status(200).json(posts);
     }
     catch (err) {

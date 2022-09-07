@@ -25,11 +25,23 @@ export const getAllPosts: RequestHandler = async (req, res) => {
       };
     }
 
+    const limit: number = Number(req.query.limit);
+    const skip: number = Number(req.query.skip);
+
+    console.log(req.query.limit);
+    console.log(req.query.skip);
+
+    // if (!limit || !skip) {
+    //   return res.status(500);
+    // }
+
     // Populate user ID with user object and sort in descending order
     posts = await Post.find(filter)
       // .populate("user parent replies reposts likes")
       .populate("user replies reposts likes parent")
-      .sort({ date: -1 });
+      .sort({ date: -1 })
+      .limit(limit)
+      .skip(skip);
 
     return res.status(200).json(posts);
   } catch (err: unknown) {
