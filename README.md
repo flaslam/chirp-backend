@@ -1,6 +1,6 @@
 # Chirp Backend
 
-Go to the [live deployed application](https://chirp-backend-flaslam.herokuapp.com)
+Go to the [live deployed application](https://chirp-lj6s.onrender.com) deployed on Render
 
 Go to the [frontend repository](https://github.com/flaslam/chirp)
 
