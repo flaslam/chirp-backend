@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.likePost = exports.setFilterToLikes = exports.setFilterToMedia = exports.setFilterToIncludeReplies = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
 const post_1 = __importDefault(require("../models/post"));
-// import { deleteFile } from "../lib/utils";
 const storage_1 = require("../lib/storage");
 // Get all posts
 const getAllPosts = async (req, res) => {
@@ -16,22 +15,14 @@ const getAllPosts = async (req, res) => {
         let filter = { parent: { $in: [null] } };
         // If we have a user, only show posts from users we follow
         if (user) {
-            // filter = {
-            //   parent: { $in: [null] },
-            //   $or: [{ user: user.following }, { user: user._id }],
-            // };
             filter = {
                 ...filter,
                 $or: [{ user: user.following }, { user: user._id }],
             };
         }
+        // Pull limit and skip queries from our request
         const limit = Number(req.query.limit);
         const skip = Number(req.query.skip);
-        console.log(req.query.limit);
-        console.log(req.query.skip);
-        // if (!limit || !skip) {
-        //   return res.status(500);
-        // }
         // Populate user ID with user object and sort in descending order
         posts = await post_1.default.find(filter)
             // .populate("user parent replies reposts likes")
@@ -129,18 +120,16 @@ const deletePost = async (req, res, next) => {
         // await Post.deleteOne(req.params.postId);
         // await Post.findOneAndDelete(req.params.postId);
         // Should remove post from its parent
-        // Delete all relevant media
+        // Delete all relevant media from S3
         if (post.media && post.media.length > 0) {
             const pathToFile = String(post.media[0]);
-            // console.log(pathToFile);
             try {
                 await (0, storage_1.deleteFile)(pathToFile);
             }
             catch (err) {
-                console.log(err);
-                // return res
-                //   .status(400)
-                //   .json({ success: false, message: "Could not delete media" });
+                return res
+                    .status(400)
+                    .json({ success: false, message: "Could not delete media" });
             }
         }
         post.delete();

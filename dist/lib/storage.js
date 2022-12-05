@@ -68,7 +68,6 @@ const uploadImage = async (req, res, next) => {
 };
 exports.uploadImage = uploadImage;
 const uploadFile = (fileBuffer, fileName, mimetype) => {
-    console.log("UPLOADING FILE");
     const uploadParams = {
         Bucket: process.env.BUCKET_NAME,
         Body: fileBuffer,
@@ -89,7 +88,6 @@ const signUrl = async (imageName) => {
 exports.signUrl = signUrl;
 // Delete file from S3
 const deleteFile = async (path) => {
-    //
     const params = {
         Bucket: process.env.BUCKET_NAME,
         Key: path,

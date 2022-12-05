@@ -1,6 +1,5 @@
 import Post from "../models/post";
 import { RequestHandler } from "express";
-// import { deleteFile } from "../lib/utils";
 import { deleteFile } from "../lib/storage";
 
 // Get all posts
@@ -14,26 +13,15 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 
     // If we have a user, only show posts from users we follow
     if (user) {
-      // filter = {
-      //   parent: { $in: [null] },
-      //   $or: [{ user: user.following }, { user: user._id }],
-      // };
-
       filter = {
         ...filter,
         $or: [{ user: user.following }, { user: user._id }],
       };
     }
 
+    // Pull limit and skip queries from our request
     const limit: number = Number(req.query.limit);
     const skip: number = Number(req.query.skip);
-
-    console.log(req.query.limit);
-    console.log(req.query.skip);
-
-    // if (!limit || !skip) {
-    //   return res.status(500);
-    // }
 
     // Populate user ID with user object and sort in descending order
     posts = await Post.find(filter)
@@ -146,17 +134,15 @@ export const deletePost: RequestHandler = async (req, res, next) => {
 
     // Should remove post from its parent
 
-    // Delete all relevant media
+    // Delete all relevant media from S3
     if (post.media && post.media.length > 0) {
       const pathToFile: string = String(post.media[0]);
-      // console.log(pathToFile);
       try {
         await deleteFile(pathToFile);
       } catch (err) {
-        console.log(err);
-        // return res
-        //   .status(400)
-        //   .json({ success: false, message: "Could not delete media" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Could not delete media" });
       }
     }
 

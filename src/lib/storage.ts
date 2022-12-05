@@ -82,8 +82,6 @@ export const uploadImage: RequestHandler = async (req, res, next) => {
 };
 
 const uploadFile = (fileBuffer: string, fileName: string, mimetype: string) => {
-  console.log("UPLOADING FILE");
-
   const uploadParams = {
     Bucket: process.env.BUCKET_NAME,
     Body: fileBuffer,
@@ -107,8 +105,6 @@ export const signUrl = async (imageName: string): Promise<string> => {
 
 // Delete file from S3
 export const deleteFile = async (path: string) => {
-  //
-
   const params = {
     Bucket: process.env.BUCKET_NAME,
     Key: path,
