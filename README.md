@@ -1,6 +1,8 @@
 # Chirp Backend
 
-Go to the [live deployed application](https://chirp-lj6s.onrender.com) deployed on Render
+Go to the live deployed application by clicking the link under the About section.
+
+(Note that the first launch may take some time because of the server idling)
 
 Go to the [frontend repository](https://github.com/flaslam/chirp)
 
