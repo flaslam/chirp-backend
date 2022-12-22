@@ -2,7 +2,7 @@ import Post from "../models/post";
 import { RequestHandler } from "express";
 import { deleteFile } from "../lib/storage";
 
-// Get all posts
+// Get all posts on timeline
 export const getAllPosts: RequestHandler = async (req, res) => {
   try {
     const user: any = req.user;
@@ -158,6 +158,7 @@ export const deletePost: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Get posts on a specific user's profile page
 export const getUserPosts: RequestHandler = async (req, res) => {
   const user: any = req.user;
   try {
@@ -168,6 +169,7 @@ export const getUserPosts: RequestHandler = async (req, res) => {
     // Default filter to not show any reply posts
     let filter: any = { parent: { $in: [null] }, user: user.id };
 
+    // If we have defined a filter in a prior middleware, use that
     if (req.body.filter !== undefined) {
       filter = req.body.filter;
     }
@@ -175,6 +177,10 @@ export const getUserPosts: RequestHandler = async (req, res) => {
     // Populate user ID with user object and sort in descending order
     const posts = await Post.find(filter)
       .populate("user replies reposts likes replies.user parent")
+      .populate({
+        path: "parent",
+        populate: { path: "user" },
+      })
       .sort({
         date: -1,
       });

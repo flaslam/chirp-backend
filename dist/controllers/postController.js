@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.likePost = exports.setFilterToLikes = exports.setFilterToMedia = exports.setFilterToIncludeReplies = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
 const post_1 = __importDefault(require("../models/post"));
 const storage_1 = require("../lib/storage");
-// Get all posts
+// Get all posts on timeline
 const getAllPosts = async (req, res) => {
     try {
         const user = req.user;
@@ -144,6 +144,7 @@ const deletePost = async (req, res, next) => {
     }
 };
 exports.deletePost = deletePost;
+// Get posts on a specific user's profile page
 const getUserPosts = async (req, res) => {
     const user = req.user;
     try {
@@ -152,12 +153,17 @@ const getUserPosts = async (req, res) => {
         }
         // Default filter to not show any reply posts
         let filter = { parent: { $in: [null] }, user: user.id };
+        // If we have defined a filter in a prior middleware, use that
         if (req.body.filter !== undefined) {
             filter = req.body.filter;
         }
         // Populate user ID with user object and sort in descending order
         const posts = await post_1.default.find(filter)
             .populate("user replies reposts likes replies.user parent")
+            .populate({
+            path: "parent",
+            populate: { path: "user" },
+        })
             .sort({
             date: -1,
         });
