@@ -44,14 +44,20 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 export const getPost: RequestHandler = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.postId)
-      .populate("user replies reposts likes parent")
+      .populate("user replies reposts likes parent parent.user")
       .populate({
         path: "replies",
-        populate: { path: "user parent replies likes reposts" },
+        populate: {
+          path: "user parent replies likes reposts",
+        },
       })
       .populate({
         path: "parent",
         populate: { path: "user replies reposts" },
+      })
+      .populate({
+        path: "replies",
+        populate: { path: "parent", populate: "user" },
       });
 
     if (post === null) {
@@ -116,8 +122,6 @@ export const createPost: RequestHandler = async (req, res) => {
 
 // Delete post
 export const deletePost: RequestHandler = async (req, res, next) => {
-  // const post = await Post.findOne({})
-
   try {
     // TODO: Check if post ID matches user ID
 
@@ -129,10 +133,7 @@ export const deletePost: RequestHandler = async (req, res, next) => {
         .json({ success: false, message: "Post could not be found." });
     }
 
-    // await Post.deleteOne(req.params.postId);
-    // await Post.findOneAndDelete(req.params.postId);
-
-    // Should remove post from its parent
+    // TODO: Should remove post from its parent
 
     // Delete all relevant media from S3
     if (post.media && post.media.length > 0) {
@@ -256,6 +257,27 @@ export const likePost: RequestHandler = async (req, res, next) => {
     }
 
     return res.status(500).json({ message: "Could not process like" });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+    return res.status(500);
+  }
+};
+
+// Return list of all people who like a specific post
+export const getPostLikes: RequestHandler = async (req, res, next) => {
+  console.log("getting post likes");
+  try {
+    const post = await Post.findById(req.params.postId).populate("likes");
+    if (post === null) {
+      return res.status(404).json({ message: "Cannot find post." });
+    }
+
+    // const users = post.likes?.map((item) => item.name);
+    console.log(post.likes);
+
+    return res.status(200).json({ message: "Found post", post });
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });

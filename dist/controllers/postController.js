@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.likePost = exports.setFilterToLikes = exports.setFilterToMedia = exports.setFilterToIncludeReplies = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
+exports.getPostLikes = exports.likePost = exports.setFilterToLikes = exports.setFilterToMedia = exports.setFilterToIncludeReplies = exports.getUserPosts = exports.deletePost = exports.createPost = exports.getPost = exports.getAllPosts = void 0;
 const post_1 = __importDefault(require("../models/post"));
 const storage_1 = require("../lib/storage");
 // Get all posts on timeline
@@ -44,14 +44,20 @@ exports.getAllPosts = getAllPosts;
 const getPost = async (req, res, next) => {
     try {
         const post = await post_1.default.findById(req.params.postId)
-            .populate("user replies reposts likes parent")
+            .populate("user replies reposts likes parent parent.user")
             .populate({
             path: "replies",
-            populate: { path: "user parent replies likes reposts" },
+            populate: {
+                path: "user parent replies likes reposts",
+            },
         })
             .populate({
             path: "parent",
             populate: { path: "user replies reposts" },
+        })
+            .populate({
+            path: "replies",
+            populate: { path: "parent", populate: "user" },
         });
         if (post === null) {
             return res.status(404).json({ message: "Cannot find post." });
@@ -108,7 +114,6 @@ const createPost = async (req, res) => {
 exports.createPost = createPost;
 // Delete post
 const deletePost = async (req, res, next) => {
-    // const post = await Post.findOne({})
     try {
         // TODO: Check if post ID matches user ID
         const post = await post_1.default.findById(req.params.postId);
@@ -117,9 +122,7 @@ const deletePost = async (req, res, next) => {
                 .status(400)
                 .json({ success: false, message: "Post could not be found." });
         }
-        // await Post.deleteOne(req.params.postId);
-        // await Post.findOneAndDelete(req.params.postId);
-        // Should remove post from its parent
+        // TODO: Should remove post from its parent
         // Delete all relevant media from S3
         if (post.media && post.media.length > 0) {
             const pathToFile = String(post.media[0]);
@@ -244,3 +247,23 @@ const likePost = async (req, res, next) => {
     }
 };
 exports.likePost = likePost;
+// Return list of all people who like a specific post
+const getPostLikes = async (req, res, next) => {
+    console.log("getting post likes");
+    try {
+        const post = await post_1.default.findById(req.params.postId).populate("likes");
+        if (post === null) {
+            return res.status(404).json({ message: "Cannot find post." });
+        }
+        // const users = post.likes?.map((item) => item.name);
+        console.log(post.likes);
+        return res.status(200).json({ message: "Found post", post });
+    }
+    catch (err) {
+        if (err instanceof Error) {
+            return res.status(500).json({ message: err.message });
+        }
+        return res.status(500);
+    }
+};
+exports.getPostLikes = getPostLikes;
